@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<!-- saved from url=(0087)file:///C:/Users/dokug/Downloads/%E8%A8%93%E7%B7%B4_%E5%87%BA%E5%B8%AD%E7%8E%872_1.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>訓練 出席率</title>
+<style>
+  :root{
+    --paper:#ECEFF1;
+    --surface:#FFFFFF;
+    --ink:#16232B;
+    --muted:#5C6B73;
+    --line:#D9E0E4;
+    --copper:#B26B2E;
+    --copper-soft:#F3E7D8;
+    --good:#2E7D5B;
+    --warn:#C4632F;
+    --absent:#B34739;
+    --absent-soft:#F6E4E1;
+    --mono:ui-monospace,"SF Mono",Menlo,"DejaVu Sans Mono",monospace;
+    --jp:-apple-system,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--jp);
+    color:var(--ink);
+    background:
+      linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 26px,
+      var(--paper);
+    background-attachment:fixed;
+    padding:18px 14px 40px;
+    max-width:520px;margin:0 auto;
+    line-height:1.5;
+  }
+  h1{font-size:15px;font-weight:700;letter-spacing:.04em;margin:0;}
+  .sub{font-size:11px;color:var(--muted);margin:2px 0 0;letter-spacing:.03em;}
+
+  /* ---- hero ---- */
+  .hero{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px 16px 14px;
+    margin:14px 0 12px;
+    display:flex;align-items:center;gap:16px;
+    box-shadow:0 1px 0 rgba(22,35,43,.03);
+  }
+  .gauge{flex:0 0 108px;position:relative;}
+  .gauge svg{display:block;transform:rotate(-90deg);}
+  .gauge .num{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;transform:none;
+  }
+  .gauge .pct{font-family:var(--mono);font-size:26px;font-weight:600;letter-spacing:-.02em;color:var(--ink);}
+  .gauge .cap{font-size:10px;color:var(--muted);letter-spacing:.08em;margin-top:1px;}
+  .facts{flex:1;min-width:0;}
+  .facts .row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px dashed var(--line);}
+  .facts .row:last-child{border-bottom:0;}
+  .facts .k{font-size:12px;color:var(--muted);}
+  .facts .v{font-family:var(--mono);font-size:14px;font-weight:600;}
+  .facts .v small{font-size:11px;color:var(--muted);font-weight:400;margin-left:1px;}
+
+  /* ---- month list ---- */
+  .month{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    margin:9px 0;
+    overflow:hidden;
+  }
+  .mhead{
+    display:grid;grid-template-columns:52px 1fr auto;
+    align-items:center;gap:10px;
+    padding:12px 14px;cursor:pointer;
+  }
+  .mlabel{font-size:15px;font-weight:700;letter-spacing:.02em;}
+  .mbar-wrap{height:8px;border-radius:5px;background:#EAEEF0;overflow:hidden;}
+  .mbar{height:100%;border-radius:5px;transition:width .35s ease;}
+  .mmeta{font-size:10.5px;color:var(--muted);margin-top:5px;font-family:var(--mono);letter-spacing:.01em;}
+  .mrate{font-family:var(--mono);font-size:16px;font-weight:600;text-align:right;min-width:56px;}
+  .mrate .chev{display:block;font-size:10px;color:var(--muted);font-family:var(--jp);margin-top:1px;}
+
+  /* ---- expand ---- */
+  .body{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+  .month.open .body{max-height:2000px;}
+  .body-inner{padding:2px 14px 14px;border-top:1px dashed var(--line);}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px;min-height:4px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--absent-soft);color:var(--absent);
+    border-radius:20px;padding:5px 8px 5px 11px;
+    font-family:var(--mono);font-size:13px;font-weight:600;
+  }
+  .chip button{
+    border:0;background:rgba(179,71,57,.14);color:var(--absent);
+    width:19px;height:19px;border-radius:50%;font-size:14px;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .chip button:active{background:rgba(179,71,57,.3);}
+  .empty{font-size:12px;color:var(--muted);padding:4px 0;}
+  .adder{display:flex;gap:8px;margin-top:10px;}
+  .adder input{
+    flex:1;min-width:0;font-family:var(--mono);font-size:16px;
+    padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;
+    background:#FAFBFC;color:var(--ink);outline:none;text-align:center;
+  }
+  .adder input.day{flex:0 0 66px;padding-left:6px;padding-right:6px;}
+  .adder input:focus{border-color:var(--copper);background:#fff;}
+  .adder button{
+    flex:0 0 auto;border:0;background:var(--ink);color:#fff;
+    font-family:var(--jp);font-size:14px;font-weight:600;
+    padding:0 18px;border-radius:10px;cursor:pointer;letter-spacing:.03em;
+  }
+  .adder button:active{opacity:.8;}
+  .adder input.reason{font-family:var(--jp);text-align:left;font-size:16px;}
+  .chip .rsn{font-family:var(--jp);font-weight:500;font-size:12px;opacity:.9;}
+  .subtotal{font-size:11px;color:var(--muted);margin-top:9px;font-family:var(--mono);}
+  .subtotal b{color:var(--absent);}
+
+  /* ---- footer / share ---- */
+  .foot{margin-top:16px;padding:0 4px;}
+  .check{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.01em;line-height:1.7;}
+  .check .ok{color:var(--good);font-weight:700;}
+  .check .ng{color:var(--warn);font-weight:700;}
+</style>
+</head>
+<body>
+  <header>
+    <h1>訓練 出席率</h1>
+    <p class="sub">欠席した日・時間・理由を足していけば、出席率は自動で計算されます（日と理由は省略OK）</p>
+  </header>
+
+  <section class="hero">
+    <div class="gauge">
+      <svg width="108" height="108" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#EAEEF0" stroke-width="11"></circle>
+        <circle id="ring" cx="60" cy="60" r="52" fill="none" stroke="var(--copper)" stroke-width="11" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7" style="stroke-dashoffset: 0; transition: stroke-dashoffset 0.5s;"></circle>
+      </svg>
+      <div class="num">
+        <span class="pct" id="totalPct">100.0%</span>
+        <span class="cap">総合出席率</span>
+      </div>
+    </div>
+    <div class="facts">
+      <div class="row"><span class="k">総訓練</span><span class="v" id="fTotal">747<small>H</small></span></div>
+      <div class="row"><span class="k">出席</span><span class="v" id="fPresent">747<small>H</small></span></div>
+      <div class="row"><span class="k">欠席</span><span class="v" id="fAbsent">0<small>H</small></span></div>
+    </div>
+  </section>
+
+  <div id="list"></div>
+
+  <div class="foot">
+    <div class="check" id="check"></div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  // 固定値（打ち換えない）: ユニット時間 unit / ユニット外時間 extra
+  // 欠席 absences[] だけ編集する（B案：1件ずつ足す）
+  var DEFAULTS = [
+    {key:"5",  label:"5月",  unit:84,  extra:0, absences:[]},
+    {key:"6",  label:"6月",  unit:108, extra:8, absences:[]},
+    {key:"7",  label:"7月",  unit:132, extra:0, absences:[]},
+    {key:"8",  label:"8月",  unit:84,  extra:6, absences:[]},
+    {key:"9",  label:"9月",  unit:102, extra:1, absences:[]},
+    {key:"10", label:"10月", unit:126, extra:0, absences:[]},
+    {key:"11", label:"11月", unit:96,  extra:0, absences:[]}
+  ];
+  var BASE_TOTAL = 747; // 総訓練 = 総ユニット732 + 総ユニット外15
+
+  var STORE = "kunren-attendance-v1";
+  var state = load();
+  var openKey = null;
+
+  // ---------- state I/O ----------
+  // 欠席1件 = {d:日(なければnull), h:時間}。古い保存(数値だけ)も受け入れて変換する。
+  function normAbs(arr){
+    if(!Array.isArray(arr)) return [];
+    return arr.map(function(x){
+      if(typeof x === "number") return {d:null, h:x, r:""};
+      if(x && typeof x === "object"){
+        var d = (x.d===0||x.d)? Number(x.d) : null;
+        if(isNaN(d) || d<1 || d>31) d = null;
+        var r = (typeof x.r === "string") ? x.r : "";
+        return {d:d, h:Number(x.h), r:r};
+      }
+      return null;
+    }).filter(function(o){ return o && !isNaN(o.h) && o.h>0; });
+  }
+  function clone(d){ return d.map(function(m){ return {key:m.key,label:m.label,unit:m.unit,extra:m.extra,absences:m.absences.map(function(a){return {d:a.d,h:a.h,r:a.r||""};})}; }); }
+  function fromHash(){
+    try{
+      var h = location.hash.replace(/^#/,"");
+      if(!h) return null;
+      var obj = JSON.parse(decodeURIComponent(h));
+      return clone(DEFAULTS).map(function(m){
+        if(obj[m.key]) m.absences = normAbs(obj[m.key]);
+        return m;
+      });
+    }catch(e){ return null; }
+  }
+  function fromLocal(){
+    try{
+      var raw = localStorage.getItem(STORE);
+      if(!raw) return null;
+      var obj = JSON.parse(raw);
+      return clone(DEFAULTS).map(function(m){
+        if(obj[m.key]) m.absences = normAbs(obj[m.key]);
+        return m;
+      });
+    }catch(e){ return null; }
+  }
+  function load(){ return fromHash() || fromLocal() || clone(DEFAULTS); }
+  function absencesObj(){
+    var o = {}; state.forEach(function(m){ o[m.key] = m.absences; }); return o;
+  }
+  function save(){
+    var o = absencesObj();
+    try{ localStorage.setItem(STORE, JSON.stringify(o)); }catch(e){}
+    try{ history.replaceState(null,"","#"+encodeURIComponent(JSON.stringify(o))); }catch(e){}
+  }
+
+  // ---------- math ----------
+  function sum(a){ return a.reduce(function(s,n){return s+n;},0); }
+  function mTotal(m){ return m.unit + m.extra; }
+  function mAbsent(m){ return m.absences.reduce(function(s,a){ return s + (a.h||0); },0); }
+  function mRate(m){ var t=mTotal(m); return t>0 ? (t-mAbsent(m))/t : 0; }
+  function pct(r){ return (r*100).toFixed(1); }
+  function rateColor(r){ return r>=0.995?"var(--good)": r>=0.9?"var(--copper)":"var(--warn)"; }
+
+  // ---------- render ----------
+  var listEl = document.getElementById("list");
+  function render(){
+    // totals
+    var unitS=0, extraS=0, absS=0;
+    state.forEach(function(m){ unitS+=m.unit; extraS+=m.extra; absS+=mAbsent(m); });
+    var totalS = unitS+extraS;
+    var presentS = totalS-absS;
+    var rate = totalS>0 ? presentS/totalS : 0;
+
+    document.getElementById("totalPct").textContent = pct(rate)+"%";
+    document.getElementById("fTotal").innerHTML = totalS+"<small>H</small>";
+    document.getElementById("fPresent").innerHTML = presentS+"<small>H</small>";
+    document.getElementById("fAbsent").innerHTML = absS+"<small>H</small>";
+    var C=326.7, ring=document.getElementById("ring");
+    ring.style.strokeDashoffset = (C*(1-rate)).toFixed(1);
+    ring.style.transition = "stroke-dashoffset .5s ease";
+
+    // check line
+    var ck = document.getElementById("check");
+    var ok = (totalS===BASE_TOTAL);
+    ck.innerHTML = "基準：総ユニット"+unitS+"H ／ 総ユニット外"+extraS+"H ／ 総訓練"+totalS+"H "
+      + (ok? '<span class="ok">✓ '+BASE_TOTAL+'Hと一致</span>' : '<span class="ng">⚠ '+BASE_TOTAL+'Hと不一致</span>');
+
+    // months
+    listEl.innerHTML = "";
+    state.forEach(function(m){
+      var t=mTotal(m), ab=mAbsent(m), r=mRate(m), col=rateColor(r);
+      var el = document.createElement("div");
+      el.className = "month" + (openKey===m.key?" open":"");
+
+      var entries = m.absences.map(function(a,i){ return {a:a, i:i}; });
+      entries.sort(function(x,y){ return (x.a.d==null?99:x.a.d) - (y.a.d==null?99:y.a.d); });
+      var chips = entries.length
+        ? entries.map(function(e){
+            var a=e.a;
+            var datePart = (a.d!=null) ? (m.key+'/'+a.d+' · ') : '';
+            var rsn = a.r ? ' · <span class="rsn">'+esc(a.r)+'</span>' : '';
+            return '<span class="chip">'+datePart+fmt(a.h)+'h'+rsn+'<button data-del="'+e.i+'" aria-label="削除">×</button></span>';
+          }).join("")
+        : '<span class="empty">欠席なし</span>';
+
+      el.innerHTML =
+        '<div class="mhead" data-toggle>'
+        +   '<span class="mlabel">'+m.label+'</span>'
+        +   '<span>'
+        +     '<div class="mbar-wrap"><div class="mbar" style="width:'+(r*100).toFixed(1)+'%;background:'+col+'"></div></div>'
+        +     '<div class="mmeta">合計'+t+'H ・ 欠席'+ab+'H</div>'
+        +   '</span>'
+        +   '<span class="mrate" style="color:'+col+'">'+pct(r)+'%<span class="chev">'+(openKey===m.key?"閉じる":"開く")+'</span></span>'
+        + '</div>'
+        + '<div class="body"><div class="body-inner">'
+        +   '<div class="chips">'+chips+'</div>'
+        +   '<div class="adder">'
+        +     '<input class="day" type="number" inputmode="numeric" step="1" min="1" max="31" placeholder="日" data-day>'
+        +     '<input type="number" inputmode="decimal" step="0.5" min="0" placeholder="欠席した時間" data-input>'
+        +     '<button data-add>＋ 追加</button>'
+        +   '</div>'
+        +   '<div class="adder"><input class="reason" type="text" placeholder="欠席理由（例：通院、就活の面接）" maxlength="60" data-reason></div>'
+        +   '<div class="subtotal">この月の欠席合計：<b>'+ab+'H</b></div>'
+        + '</div></div>';
+
+      // toggle
+      el.querySelector("[data-toggle]").addEventListener("click", function(){
+        openKey = (openKey===m.key)? null : m.key;
+        render();
+      });
+      // delete chip
+      Array.prototype.forEach.call(el.querySelectorAll("[data-del]"), function(btn){
+        btn.addEventListener("click", function(e){
+          e.stopPropagation();
+          m.absences.splice(parseInt(btn.getAttribute("data-del"),10),1);
+          save(); render();
+        });
+      });
+      // add
+      var inp = el.querySelector("[data-input]");
+      var dayInp = el.querySelector("[data-day]");
+      var rsnInp = el.querySelector("[data-reason]");
+      function add(){
+        var v = parseFloat(inp.value);
+        var r = rsnInp.value.trim();
+        var d = parseInt(dayInp.value,10);
+        if(isNaN(d) || d<1 || d>31) d = null;
+        if(!isNaN(v) && v>0){ m.absences.push({d:d, h:v, r:r}); save(); render();
+          setTimeout(function(){ var n=document.querySelector('.month.open [data-day]'); if(n) n.focus(); },0);
+        } else { inp.focus(); }
+      }
+      el.querySelector("[data-add]").addEventListener("click", function(e){ e.stopPropagation(); add(); });
+      inp.addEventListener("keydown", function(e){ if(e.key==="Enter") add(); });
+      inp.addEventListener("click", function(e){ e.stopPropagation(); });
+      dayInp.addEventListener("keydown", function(e){ if(e.key==="Enter") add(); });
+      dayInp.addEventListener("click", function(e){ e.stopPropagation(); });
+      rsnInp.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.isComposing) add(); });
+      rsnInp.addEventListener("click", function(e){ e.stopPropagation(); });
+
+      listEl.appendChild(el);
+    });
+  }
+  function esc(t){ return String(t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function fmt(n){ return (n%1===0)? String(n) : String(n); }
+
+  render();
+})();
+</script>
+
+
+
+</body></html>
